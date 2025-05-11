@@ -1,0 +1,43 @@
+import pandas as pd
+
+# Load the dataset
+df = pd.read_excel("internship_applications.xlsx")
+
+# Preview the data
+print(df.head())
+# Check missing values
+print("Missing values:\n", df.isnull().sum())
+
+# Fill or drop based on context
+df["degree"].fillna("Unknown", inplace=True)
+df["cgpa"].fillna(df["cgpa"].mean(), inplace=True)
+df["phone"].fillna("Missing", inplace=True)
+
+# Drop rows where critical fields are missing
+df.dropna(subset=["name", "email"], inplace=True)
+# Check for duplicates
+print("Duplicate rows:", df.duplicated().sum())
+
+# Drop exact duplicate rows
+df.drop_duplicates(inplace=True)
+
+# Optional: Remove based on key columns (like email)
+df.drop_duplicates(subset=["email"], keep="first", inplace=True)
+import numpy as np
+
+# Define outlier threshold for CGPA (valid range: 2.0 - 4.0)
+df = df[(df["cgpa"] >= 2.0) & (df["cgpa"] <= 4.0)]
+# Lowercase emails
+df["email"] = df["email"].str.lower()
+
+# Strip whitespace from text fields
+df["name"] = df["name"].str.strip()
+df["degree"] = df["degree"].str.strip().str.upper()
+
+# Format phone numbers (basic cleanup)
+df["phone"] = df["phone"].str.replace(r"[^\d+]", "", regex=True)
+# Reorder columns
+df = df[["id", "name", "email", "phone", "degree", "cgpa", "submission_time", "ip_address"]]
+
+# Save cleaned dataset
+df.to_excel("cleaned_internship_applications.xlsx", index=False)
