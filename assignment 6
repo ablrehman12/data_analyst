@@ -1,0 +1,32 @@
+import pandas as pd
+
+# Load data
+df = pd.read_excel("intern_performance_data.xlsx")
+
+# Calculate task completion time in days
+df["task_assigned_date"] = pd.to_datetime(df["task_assigned_date"])
+df["task_completed_date"] = pd.to_datetime(df["task_completed_date"])
+df["completion_days"] = (df["task_completed_date"] - df["task_assigned_date"]).dt.days
+
+# Normalize "completion_days" into score (0–10)
+max_days = df["completion_days"].max()
+df["time_score"] = 10 - (df["completion_days"] / max_days * 10)
+df["time_score"] = df["time_score"].clip(lower=0)
+
+# Final KPI Score (Weighted average)
+df["final_score"] = (
+    0.4 * df["time_score"] +
+    0.3 * df["quality_score"] +
+    0.3 * df["mentor_feedback"]
+)
+
+# Group by intern to calculate monthly average
+monthly_report = df.groupby(["intern_id", "name"]).agg({
+    "completion_days": "mean",
+    "quality_score": "mean",
+    "mentor_feedback": "mean",
+    "final_score": "mean"
+}).reset_index()
+
+# Save the report
+monthly_report.to_excel("monthly_intern_performance_report.xlsx", index=False)
