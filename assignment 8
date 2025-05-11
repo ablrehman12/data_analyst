@@ -1,0 +1,12 @@
+-- Example SQL query to track drop-off
+SELECT
+    user_id,
+    event_name,
+    event_time,
+    page_url
+FROM
+    user_event_logs
+WHERE
+    event_time >= '2025-05-01'
+ORDER BY
+    user_id, event_time;
